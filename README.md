@@ -1,6 +1,6 @@
-# CSES_JavaSolutions
-These are java solutions of Cses problem set.
-Pro tip: As cses is pretty hard(impossible) to solve with java you always need to 100% optimize your solution to get accepted, you should take care of input(use buffer reader), use good algo and a good output(use StringBuilder or buffer instead of string, and try to keep the no. of println statements min).
-Using String tokenizer with Print Writer also fastens your code(use it then).
-Even majority of my programs are also not accepting but then also i am adding those so that atleast we understand the logic.
-BTW, now some of cses problems are availeble in codeforces gym also: https://codeforces.com/blog/entry/87912#:~:text=Slow%20CSES%20Judge,faster%2C%20which%20solves%20this%20issue.
+# CSES Java Solutions
+These are Java solutions to the Cses problem set. Here's a pro tip: Since Cses problems can be quite challenging (even impossible) to solve with Java, it's essential to optimize your solutions to ensure they are accepted. You should pay attention to the input (use BufferedReader), employ efficient algorithms, and utilize appropriate output methods (such as StringBuilder or BufferedWriter) instead of regular strings. Additionally, try to minimize the number of println statements.
+
+Another helpful technique is to use String Tokenizer along with PrintWriter, as it can speed up your code. Even though some of my programs may not be accepted, I include them to aid in understanding the logic.
+
+By the way, some Cses problems are now available on Codeforces Gym as well. You can find them here: (here) [https://codeforces.com/blog/entry/87912#:~:text=Slow%20CSES%20Judge,faster%2C%20which%20solves%20this%20issue]
