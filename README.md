@@ -3,4 +3,4 @@ These are Java solutions to the Cses problem set. Here's a pro tip: Since Cses p
 
 Another helpful technique is to use String Tokenizer along with PrintWriter, as it can speed up your code. Even though some of my programs may not be accepted, I include them to aid in understanding the logic.
 
-By the way, some Cses problems are now available on Codeforces Gym as well. You can find them here: (here) [https://codeforces.com/blog/entry/87912#:~:text=Slow%20CSES%20Judge,faster%2C%20which%20solves%20this%20issue]
+By the way, some Cses problems are now available on Codeforces Gym as well. You can find them here: https://codeforces.com/blog/entry/87912#:~:text=Slow%20CSES%20Judge,faster%2C%20which%20solves%20this%20issue
