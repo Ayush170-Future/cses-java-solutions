@@ -1,0 +1,99 @@
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Arrays;
+ 
+public class DistanceQueries {
+ 
+    static int[][] up = new int[200005][20];
+    static int[] level;
+ 
+    public static void binary_lifting(int src, int par, ArrayList<ArrayList<Integer>> al, int l) {
+        up[src][0] = par;
+        level[src] = l;
+        for(int i = 1; i < 20; i++) {
+            if(up[src][i-1] != -1) {
+                up[src][i] = up[up[src][i-1]][i-1];
+            } else {
+                up[src][i] = -1;
+            }
+        }
+ 
+        for(int j: al.get(src)) {
+            if(j != par)
+            binary_lifting(j, src, al, l+1);
+        }
+    }
+ 
+    public static int find_ancestor(int src, int k) {
+        if(src == -1 || k == 0) {
+            return src;
+        }
+        for(int i = 19; i >= 0; i--) {
+            if(k >= (1 << i)) {
+                return find_ancestor(up[src][i], k - (1 << i));
+            }
+        }
+        return -1;
+    }
+ 
+    public static int lca(int u, int v) {
+        if(u == v) return u;
+ 
+        if(level[u] > level[v]) {
+            int temp = v;
+            v = u;
+            u = temp;
+        }
+ 
+        int x = level[v] - level[u];
+        v = find_ancestor(v, x);
+ 
+        if(u==v) return u;
+ 
+        for(int i = 19; i >= 0; i--) {
+            if(up[u][i] != up[v][i]) {
+                u = up[u][i];
+                v = up[v][i];
+            }
+        }
+ 
+        return find_ancestor(u, 1);
+    }
+ 
+    public static int find_distance(int u, int v) {
+        int lca = lca(u, v);
+        return level[u] + level[v] - 2*level[lca];
+    }
+ 
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        String[] s = br.readLine().split(" ");
+        int n = Integer.parseInt(s[0]);
+        int q = Integer.parseInt(s[1]);
+        ArrayList<ArrayList<Integer>> al = new ArrayList<>();
+        for(int i = 0; i < n; i++) al.add(new ArrayList<>());
+        for(int i = 0; i < n-1; i++) {
+            String[] str = br.readLine().split(" ");
+            int u = Integer.parseInt(str[0]) - 1;
+            int v = Integer.parseInt(str[1]) - 1;
+            al.get(u).add(v);
+            al.get(v).add(u);
+        }
+ 
+        level = new int[n];
+        level[0] = 0;
+ 
+        for(int[] a: up) Arrays.fill(a, -1);
+ 
+        binary_lifting(0, -1, al, 0);
+ 
+        for(int i = 0; i < q; i++) {
+            String[] str = br.readLine().split(" ");
+            int u = Integer.parseInt(str[0]) - 1;
+            int v = Integer.parseInt(str[1]) - 1;
+            System.out.println(find_distance(u, v));
+        }
+    }
+}
