@@ -1,0 +1,455 @@
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+
+public class DynamicRangeMinimumQueries {
+
+    // Binary Lifting
+    // -1 when no ancestor
+    static int[][] up = new int[200005][20];
+    static int[] level = new int[200005];
+
+    static void binary_lifting(int i, int par, ArrayList<ArrayList<Integer>> al, int l) {
+        up[i][0] = par;
+        level[i] = l;
+        for(int j = 1; j < 20; j++) {
+            if(up[i][j-1] == -1) {
+                up[i][j] = -1;
+            } else {
+                up[i][j] = up[up[i][j-1]][j-1];
+            }
+        }
+
+        for(int j: al.get(i)) {
+            if(j != par) {
+                binary_lifting(j, i, al, l+1);
+            }
+        }
+    }
+
+    static int find_ancestor(int i, int k) {
+        if(i == -1 || k == 0) {
+            return i;
+        }
+
+        for(int j = 19; j >= 0; j--) {
+            if((1 << j) <= k) {
+                return find_ancestor(up[i][j], k - (1 << j));
+            }
+        }
+        return -1;
+    }
+
+    static int lca(int u, int v) {
+        if(u == v) return u;
+        if(level[u] > level[v]) {
+            int temp = v;
+            v = u;
+            u = temp;
+        }
+
+        int x = level[v] - level[u];
+        v = find_ancestor(v, x);
+
+        if(u == v) return u;
+
+        for(int i = 19; i >= 0; i--) {
+            if(up[u][i] != up[v][i]) {
+                u = up[u][i];
+                v = up[v][i];
+            }
+        }
+
+        return find_ancestor(u, 1);
+    }
+
+    // Interactive example
+//    public static void interactiveExample() {
+//        int l = 1;
+//        int r = 1000005;
+//
+//        int ans = -1;
+//        while(r >= l) {
+//            int mid = l + (r-l)/2;
+//            System.out.println(mid);
+//            System.out.flush();
+//
+//            //String s = br.readLine();
+//
+//            if(s.equals(">=")) {
+//                ans = mid;
+//                l = mid+1;
+//            }
+//            else r = mid-1;
+//        }
+//
+//    }
+
+    // DIGIT DP - find no. of X in [0, R] such that X follows f(x) -- Kartik Arora video
+    // dp(N, X) = Submission of {dp(n-1, x-i)} i in [0, 9]
+
+    /*
+
+    When states are sharing then we use one extra variable, like in this case it is number of ones in the given number
+
+    kabhi kabhi sub problem share nahi karti jaise ki isme - find no. of X in [0, R] such that X follows f(x) -- Kartik Arora video
+    kabhi kabhi karti hain jaise ki isme - Given an integer n, count the total number of digit 1 appearing in all non-negative integers less than or equal to n.
+    class Solution {
+public:
+    vector<int> digit;
+    int dp[11][11][2];
+    int solve(int m, int l, int ones, int tight){
+        if(m==0){
+            return ones;
+        }
+        if(dp[m][ones][tight]!=-1){
+            return dp[m][ones][tight];
+        }
+        int ans = 0;
+        if(tight){
+            for(int i = 0; i<digit[l-m]; i++){
+                ans += solve(m-1,l,ones+(i==1?1:0),0);
+            }
+            ans += solve(m-1,l,ones+(digit[l-m]==1?1:0),1);
+        }else{
+            for(int i = 0; i<10; i++){
+                ans += solve(m-1,l,ones+(i==1?1:0),0);
+            }
+        }
+        return dp[m][ones][tight] = ans;
+    }
+    int countDigitOne(int n) {
+        if(n==0)return 0;
+        int l = log10(n)+1;
+        vector<int> digits;
+        while(n){
+            digits.push_back(n%10);
+            n=n/10;
+        }
+        reverse(digits.begin(),digits.end());
+        digit=digits;
+        memset(dp,-1,sizeof(dp));
+        return solve(l,l,0,1);
+    }
+};
+     */
+
+    // sample trie
+    class Node {
+        Node[] links;
+        Node() {
+            this.links = new Node[2];
+        }
+
+        boolean containsKey(int i) {
+            return (links[i] != null);
+        }
+
+        Node get(int i) {
+            return links[i];
+        }
+
+        void put(int i, Node node) {
+            links[i] = node;
+        }
+    }
+
+    class Trie {
+        private Node root;
+
+        Trie() {
+            root = new Node();
+        }
+
+        public void insert(int num) {
+            Node node = root;
+            for(int i = 31; i >= 0; i--) {
+                int bit = (num >> i) & 1;
+                if(!node.containsKey(bit)) {
+                    node.put(bit, new Node());
+                }
+                node = node.get(bit);
+            }
+        }
+
+        public int getMax(int num) {
+            Node node = root;
+            int max = 0;
+            for(int i = 31; i >= 0; i--) {
+                int bit = 1 - ((num >> i) & 1);
+                if(node.containsKey(bit)) {
+                    max = max | (1 << i);
+                    node = node.get(bit);
+                } else {
+                    node = node.get(1 - bit);
+                }
+            }
+
+            return max;
+        }
+    }
+
+
+    // Minimum positive number not in array: MEX -- O(n) using Set 1 0 2 4 3
+    public static int findMEX(int[] nums, int n)
+    {
+        Arrays.sort(nums);
+        int ans = 0;
+        for (int i = 0; i < n; i++) {
+            if (nums[i] == ans)
+                ans++;
+        }
+        return ans;
+    }
+
+    // Sieve of Eratosthenes
+    static int MAX = 1123456;
+    static boolean[] prime = new boolean[MAX];
+    static boolean[] used = new boolean[MAX];
+    public static void seive() {
+        for (int i = 2; i*i < MAX; ++i) {
+            if (!used[i]) {
+                prime[i] = true;
+                for (int j = i*i; j < MAX; j += i) {
+                    used[j] = true;
+                }
+            }
+        }
+        prime[1] = false;
+    }
+
+    // Prime factors using Sieve of Eratosthenes.
+    static final int MAXN = 10000007;
+    static int sieve[] = new int[MAXN]; // Stores the least prime number that is a factor of i at sieve[i]
+
+    public static void setSieve() {
+        for(int i = 0; i < MAXN; i++) {
+            sieve[i] = -1;
+        }
+        for(int i = 2; i * i < MAXN; i++) {
+            if(sieve[i] == -1) {
+                for(int j = i*i; j < MAXN; j += i) {
+                    if(sieve[j] == -1) {
+                        sieve[j] = i;
+                    }
+                }
+            }
+        }
+    }
+
+    // Prime-factorization using Sieve.
+    // Returns map of prime factors with their count
+    public static HashMap<Integer, Integer> factors(int n) {
+        HashMap<Integer, Integer> map = new HashMap<>();
+
+        while(sieve[n] != -1) {
+            map.put(sieve[n], map.getOrDefault(sieve[n], 0) + 1);
+            n = n/sieve[n];
+        }
+        map.put(n, map.getOrDefault(n, 0) + 1);
+        return map;
+    }
+
+    // Normal Prime factorization: as the Sieve one has big memory requirements
+    // Optimized till root n
+    public static HashMap<Integer, Integer> normalPrimeFactors(int n) {
+        HashMap<Integer, Integer> map = new HashMap<>();
+
+        int i = 0;
+        for(i = 2;i*i<=n;i++)
+        {
+            if(n%i == 0)
+            {
+                int cnt = 0;
+                while(n%i == 0)
+                {
+                    n/=i;
+                    cnt++;
+                }
+                map.put(i, map.getOrDefault(i, 0) + cnt);
+            }
+        }
+        if(n > 1)map.put(n, map.getOrDefault(i, 0) + 1);
+
+        return map;
+    }
+
+    // nCr under mod 1e9 + 7
+    static long mod = (long) (1e9 + 7);
+
+    static long fast_power(long a, long p) {
+        long res = 1;
+        while(p > 0) {
+            if(p % 2 == 0) {
+                a = ((long) a * a) % mod;
+                p = p/2;
+            } else {
+                res = ((long) res * a) % mod;
+                p--;
+            }
+        }
+        return res;
+    }
+
+    static int factorial (int n) {
+        int fact = 1;
+        for(int i = 1; i <= n; i++) {
+            fact = (int) (((long) fact * i) % mod);
+        }
+        return fact;
+    }
+
+    static int C(int n, int k) {
+        return (int) ((long) factorial(n) * fast_power(factorial(k), mod - 2) % mod * fast_power(factorial(n - k), mod - 2) % mod);
+    }
+
+
+    // Bitwise AND of range n to m: n, n+1, n+2,......m
+    public static long rangeBitwiseAnd(long m, long n) {
+        return (n > m) ? (rangeBitwiseAnd(m/2, n/2) << 1) : m;
+    }
+
+    // DSU
+    public static int findParent(int u, int[] parent) {
+        if(u == parent[u]) return u;
+        return parent[u] = findParent(parent[u], parent);
+    }
+
+    public static void union(int u, int v, int[] rank, int[] parent) {
+        u = findParent(u,parent);
+        v = findParent(v, parent);
+
+        if(rank[u] < rank[v]) {
+            parent[u] = v;
+        } else if(rank[u] > rank[v]) {
+            parent[v] = u;
+        } else {
+            parent[v] = u;
+            rank[u]++;
+        }
+    }
+
+    // Segment tree
+    static int size = (int) 5e5;
+    static long[] a = new long[size];
+    static long[] segment = new long[4*size];
+    static long[] lazy = new long[4*size];
+    public static void main (String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StringBuilder sb = new StringBuilder();
+        int t = 1;
+        while (t-- > 0) {
+            String[] st = br.readLine().split(" ");
+            int n = Integer.parseInt(st[0]);
+            int q = Integer.parseInt(st[1]);
+            String[] str = br.readLine().split(" ");
+
+            for(int i = 0; i < n; i++) {
+                a[i] = Integer.parseInt(str[i]);
+            }
+
+            build(0, 0, n-1);
+
+            while(q-- > 0) {
+                String[] s = br.readLine().split(" ");
+                int o = Integer.parseInt(s[0]);
+                int l = Integer.parseInt(s[1]) - 1;
+                int r = Integer.parseInt(s[2]) - 1;
+
+                if(o == 1) {
+                    pointUpdate(0, 0, n-1, l, r+1);
+                    a[l] = r+1;
+                } else {
+                    sb.append(query(0, 0, n - 1, l, r));
+                    sb.append("\n");
+                }
+            }
+
+            sb.append("\n");
+        }
+        System.out.println(sb);
+    }
+    static void build(int ind, int low, int high) {
+        if(low == high) {
+            segment[ind] = a[low];
+            return;
+        }
+        int mid = (low + high)/2;
+        build(2*ind+1, low, mid);
+        build(2*ind+2, mid+1, high);
+        segment[ind] = Math.min(segment[2*ind+1], segment[2*ind+2]);
+    }
+    static long query(int ind, int low, int high, int l, int r) {
+        if(low >= l && high <= r) {
+            return segment[ind];
+        }
+        if(high < l || low > r) return Integer.MAX_VALUE;
+        int mid = (low + high) /2;
+        long left = query(2*ind+1, low, mid, l, r);
+        long right = query(2*ind+2, mid+1, high, l, r);
+        return Math.min(left, right);
+    }
+    static void pointUpdate(int ind, int low, int high, int node, int val) {
+        if(low == high) {
+            segment[ind] = val;
+        }
+
+        else {
+            int mid = (low+high)/2;
+            if(node <= mid && node >= low)
+                pointUpdate(2*ind+1, low, mid, node, val);
+            else pointUpdate(2*ind+2, mid+1, high, node, val);
+
+            segment[ind] = Math.min(segment[2*ind+1], segment[2*ind+2]);
+        }
+    }
+
+    static void rangeUpdate(int ind, int low, int high, int l, int r, int val) {
+        if(lazy[ind] != 0) {
+            segment[ind] += (high - low + 1)*lazy[ind];
+            if(low != high) {
+                lazy[2*ind + 1] += lazy[ind];
+                lazy[2*ind + 2] += lazy[ind];
+            }
+            lazy[ind] = 0;
+        }
+
+        if(r < low || l > high || low > high) return;
+
+        if(low>= l && high <= r) {
+            segment[ind] += (high - low + 1)*val;
+            if(low != high) {
+                lazy[2*ind+1] += lazy[ind];
+                lazy[2*ind+2] += lazy[ind];
+            }
+            return;
+        }
+
+        int mid = (low + high) >> 1;
+        rangeUpdate(2*ind+1, low, mid, l, r, val);
+        rangeUpdate(2*ind+2, mid+1, high, l, r, val);
+        segment[ind] = segment[2*ind+1] + segment[2*ind+2];
+    }
+    static long querySumLazy(int ind, int low, int high, int l, int r, int val) {
+        if(lazy[ind]!=0) {
+            segment[ind] += (high - low + 1)*lazy[ind];
+            if(low!=high) {
+                lazy[2*ind+1] += lazy[ind];
+                lazy[2*ind+1] += lazy[ind];
+            }
+            lazy[ind] = 0;
+        }
+        if(r < low || l > high || low > high) return 0;
+
+        if(low >= l && high <= r){
+            return segment[ind];
+        }
+        int mid = (low+high) >> 1;
+        //return querySumLazy(2*ind+1, low, mid, l, r, val) + querySumLazy(2*ind+2, )
+        return 1l;
+    }
+
+}
