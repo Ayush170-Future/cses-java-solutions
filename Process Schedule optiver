@@ -1,0 +1,117 @@
+import java.io.*;
+import java.lang.reflect.Array;
+import java.util.*;
+import java.text.*;
+import java.math.*;
+import java.util.regex.*;
+
+public class Main {
+
+    static class ProcessSchedule {
+        public ProcessSchedule(int startTime, int endTime) {
+            this.startTime = startTime;
+            this.endTime = endTime;
+        }
+
+        public int startTime;
+        public int endTime;
+    }
+
+    static class Dependency {
+        public Dependency(int pid1, int pid2) {
+            this.pid1 = pid1;
+            this.pid2 = pid2;
+        }
+        public int pid1;
+        public int pid2;
+    }
+
+    static class Scheduler {
+        ArrayList<int[]> p = new ArrayList<>();
+        ArrayList<ArrayList<Integer>> d = new ArrayList<>();
+        int n;
+        public Scheduler(Vector<ProcessSchedule> processes, Vector<Dependency> dependencies) {
+            p = new ArrayList<>();
+            d = new ArrayList<>();
+            n = processes.size();
+            for(int i = 0; i < n; i++) {
+                p.add(new int[]{processes.get(i).startTime, processes.get(i).endTime});
+            }
+            for(int i = 0; i < n; i++) {
+                d.add(new ArrayList<>());
+            }
+            for(int i = 0; i < dependencies.size(); i++) {
+                int u = dependencies.get(i).pid1 - 1;
+                int v = dependencies.get(i).pid2 - 1;
+                d.get(u).add(v);
+            }
+        }
+
+        boolean cycle() {
+            int indegree[] = new int[n];
+            for(int i = 0; i < n;i++) {
+                for(int j: d.get(i)) {
+                    indegree[j]++;
+                }
+            }
+
+            Queue<Integer> q = new LinkedList<Integer>();
+            for (int i = 0; i < n; i++) {
+                if (indegree[i] == 0)
+                    q.add(i);
+            }
+
+            int cnt = 0;
+
+            Vector<Integer> topOrder = new Vector<Integer>();
+            while (!q.isEmpty()) {
+
+                int u = q.poll();
+                topOrder.add(u);
+
+                for (int node : d.get(u)) {
+                    if (--indegree[node] == 0)
+                        q.add(node);
+                }
+                cnt++;
+            }
+
+            // Check if there was a cycle
+            if (cnt != n) {
+                return false;
+            }
+
+            return true;
+        }
+
+        public void PrintSchedule() {
+            if(cycle()) {
+                System.out.println("IMPOSSIBLE");
+                return;
+            }
+
+            boolean[] vis = new boolean[n];
+            for(int i = 0; i < n; i++) {
+                if(!vis[i]) {
+                    dfs(i, vis);
+                }
+            }
+
+            for(int[] i: p) {
+                System.out.println(i[0] +" " +i[1]);
+            }
+        }
+
+        public void dfs(int i, boolean[] vis) {
+            if(vis[i]) return;
+            vis[i] = true;
+            for(int j: d.get(i)) {
+                if(!vis[i]) {
+                    p.get(j)[0] = Math.max(p.get(i)[0] + 1, p.get(j)[0]);
+                    p.get(j)[1] = Math.min(p.get(i)[1] - 1, p.get(j)[2]);
+                    dfs(j, vis);
+                }
+            }
+        }
+    }
+}
