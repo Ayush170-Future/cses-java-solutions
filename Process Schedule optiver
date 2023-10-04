@@ -106,11 +106,9 @@ public class Main {
             if(vis[i]) return;
             vis[i] = true;
             for(int j: d.get(i)) {
-                if(!vis[i]) {
-                    p.get(j)[0] = Math.max(p.get(i)[0] + 1, p.get(j)[0]);
-                    p.get(j)[1] = Math.min(p.get(i)[1] - 1, p.get(j)[2]);
-                    dfs(j, vis);
-                }
+                p.get(j)[0] = Math.max(p.get(i)[0] + 1, p.get(j)[0]);
+                p.get(j)[1] = Math.min(p.get(i)[1] - 1, p.get(j)[2]);
+                dfs(j, vis);
             }
         }
     }
